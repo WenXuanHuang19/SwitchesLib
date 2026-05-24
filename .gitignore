@@ -21,3 +21,11 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+
+# Project context and agent docs (tracked separately outside this repo)
+CONTEXT.md
+docs/
+
+# IDE and tooling
+.codegraph/
+.cursor/
