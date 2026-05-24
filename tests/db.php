@@ -73,6 +73,25 @@ function insert_switch(PDO $pdo, array $overrides = []): int
     return (int) $pdo->lastInsertId();
 }
 
+/** Insert a user with sensible defaults; returns the new row id. */
+function insert_user(PDO $pdo, array $overrides = []): int
+{
+    $row = array_merge([
+        'username'      => 'user-' . bin2hex(random_bytes(4)),
+        'email'         => bin2hex(random_bytes(4)) . '@example.com',
+        'password_hash' => 'x',
+        'role'          => 'user',
+    ], $overrides);
+
+    $columns = implode(', ', array_keys($row));
+    $placeholders = implode(', ', array_map(fn($c) => ":$c", array_keys($row)));
+
+    $stmt = $pdo->prepare("INSERT INTO users ({$columns}) VALUES ({$placeholders})");
+    $stmt->execute($row);
+
+    return (int) $pdo->lastInsertId();
+}
+
 /** Insert a designer with a default name; returns the new row id. */
 function insert_designer(PDO $pdo, array $overrides = []): int
 {

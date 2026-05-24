@@ -41,6 +41,17 @@ class SwitchRepository
         $stmt->execute(['id' => $id]);
     }
 
+    /** Whether a switch with the given name already exists under that designer. */
+    public function existsByNameAndDesigner(string $name, ?int $designerId): bool
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT 1 FROM switches WHERE name = :name AND designer_id <=> :designer_id LIMIT 1"
+        );
+        $stmt->execute(['name' => $name, 'designer_id' => $designerId]);
+
+        return $stmt->fetchColumn() !== false;
+    }
+
     /** The $limit most recently added approved switches, for the home page. */
     public function latest(int $limit = 9): array
     {

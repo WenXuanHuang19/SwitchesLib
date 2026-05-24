@@ -12,6 +12,8 @@
         <a href="<?= url('/switches') ?>">Switches</a>
         <a href="<?= url('/blog') ?>">Blog</a>
         <?php if (Auth::check()): ?>
+            <a href="<?= url('/submit') ?>">Submit a Switch</a>
+            <a href="<?= url('/my-submissions') ?>">My Submissions</a>
             <span class="nav-user">Hi, <?= e(Auth::username()) ?></span>
             <form class="nav-logout" method="post" action="<?= url('/logout') ?>">
                 <button type="submit">Logout</button>
