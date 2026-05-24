@@ -73,6 +73,20 @@ function insert_switch(PDO $pdo, array $overrides = []): int
     return (int) $pdo->lastInsertId();
 }
 
+/** Insert a designer with a default name; returns the new row id. */
+function insert_designer(PDO $pdo, array $overrides = []): int
+{
+    $row = array_merge(['name' => 'Designer ' . bin2hex(random_bytes(4))], $overrides);
+
+    $columns = implode(', ', array_keys($row));
+    $placeholders = implode(', ', array_map(fn($c) => ":$c", array_keys($row)));
+
+    $stmt = $pdo->prepare("INSERT INTO designers ({$columns}) VALUES ({$placeholders})");
+    $stmt->execute($row);
+
+    return (int) $pdo->lastInsertId();
+}
+
 /**
  * Insert a blog post with sensible defaults; pass overrides to set specific
  * columns. Returns the new row id.

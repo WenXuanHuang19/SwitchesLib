@@ -20,6 +20,12 @@ function e(?string $value): string
     return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+/** A field's value, or "Unknown" when no official data exists (null or empty). */
+function or_unknown($value): string
+{
+    return ($value === null || $value === '') ? 'Unknown' : (string) $value;
+}
+
 /** Render the 404 page and stop. Used when a controller can't find a record. */
 function not_found(): void
 {
