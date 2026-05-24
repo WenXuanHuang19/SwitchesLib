@@ -41,6 +41,50 @@ class SwitchRepository
         $stmt->execute(['id' => $id]);
     }
 
+    /** All designers ordered alphabetically, for filter dropdowns. */
+    public function allDesigners(): array
+    {
+        $stmt = $this->pdo->query('SELECT * FROM designers ORDER BY name ASC');
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Approved switches matching optional filter criteria, in the requested
+     * sort order.  $filters keys: switch_type, sound_profile, feel_profile,
+     * designer_id, factory_lubed, recommended_use.
+     * $sort: 'newest' | 'most_viewed' | 'lightest' | 'heaviest'.
+     */
+    public function filtered(array $filters = [], string $sort = 'newest'): array
+    {
+        $where  = ["status = 'approved'"];
+        $params = [];
+
+        $allowed = ['switch_type', 'sound_profile', 'feel_profile',
+                    'designer_id', 'factory_lubed', 'recommended_use'];
+
+        foreach ($allowed as $col) {
+            if (isset($filters[$col]) && $filters[$col] !== '') {
+                $where[]        = "$col = :$col";
+                $params[":$col"] = $filters[$col];
+            }
+        }
+
+        $orderBy = match ($sort) {
+            'most_viewed' => 'views_count DESC',
+            'lightest'    => 'bottom_out_force IS NULL ASC, bottom_out_force ASC',
+            'heaviest'    => 'bottom_out_force IS NULL ASC, bottom_out_force DESC',
+            default       => 'created_at DESC',
+        };
+
+        $sql  = 'SELECT * FROM switches WHERE ' . implode(' AND ', $where);
+        $sql .= ' ORDER BY ' . $orderBy;
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
+
     /**
      * Up to $limit approved switches similar to the given one: same Switch Type
      * and Sound Profile, ordered by closest bottom-out force, excluding itself.
