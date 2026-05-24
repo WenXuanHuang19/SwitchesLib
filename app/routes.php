@@ -17,3 +17,5 @@ $router->post('/register', 'AuthController@register');
 $router->get('/login', 'AuthController@showLogin');
 $router->post('/login', 'AuthController@login');
 $router->post('/logout', 'AuthController@logout');
+
+$router->get('/admin', 'AdminController@dashboard');
