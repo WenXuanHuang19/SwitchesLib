@@ -15,6 +15,20 @@ function view(string $name, array $data = [], string $layout = 'partials'): void
     require VIEWS_PATH . '/' . $layout . '/footer.php';
 }
 
+/** Queue a one-time flash message for the next page render. */
+function flash(string $message): void
+{
+    $_SESSION['flash'] = $message;
+}
+
+/** Read and clear the queued flash message, or null if none. */
+function flash_pull(): ?string
+{
+    $message = $_SESSION['flash'] ?? null;
+    unset($_SESSION['flash']);
+    return $message;
+}
+
 /** Escape a string for safe output in HTML. */
 function e(?string $value): string
 {

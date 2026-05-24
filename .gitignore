@@ -32,3 +32,6 @@ docs/
 
 # macOS
 .DS_Store
+# User-uploaded media (keep the directory placeholders, not the files)
+public/uploads/*/*
+!public/uploads/*/.gitkeep
