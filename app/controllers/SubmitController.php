@@ -44,7 +44,7 @@ class SubmitController
             return;
         }
 
-        (new SubmissionRepository(Database::pdo()))->create(Auth::id(), $data);
+        (new SubmissionRepository(Database::pdo()))->create((int) Auth::id(), $data);
 
         header('Location: ' . url('/my-submissions'));
         exit;
