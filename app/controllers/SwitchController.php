@@ -5,7 +5,29 @@ class SwitchController
     public function index(): void
     {
         $repo = new SwitchRepository(Database::pdo());
-        view('switches/index', ['switches' => $repo->allApproved()]);
+
+        // Collect filter params from GET, stripping empties.
+        $filterKeys = ['switch_type', 'sound_profile', 'feel_profile',
+                       'designer_id', 'factory_lubed', 'recommended_use'];
+        $filters = [];
+        foreach ($filterKeys as $key) {
+            $val = trim($_GET[$key] ?? '');
+            if ($val !== '') {
+                $filters[$key] = $val;
+            }
+        }
+
+        $sort = trim($_GET['sort'] ?? 'newest');
+        if (!in_array($sort, ['newest', 'most_viewed', 'lightest', 'heaviest'], true)) {
+            $sort = 'newest';
+        }
+
+        view('switches/index', [
+            'switches'  => $repo->filtered($filters, $sort),
+            'designers' => $repo->allDesigners(),
+            'filters'   => $filters,
+            'sort'      => $sort,
+        ]);
     }
 
     public function show(string $slug): void
