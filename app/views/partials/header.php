@@ -11,7 +11,15 @@
         <a href="<?= url('/') ?>">Switches Lib</a>
         <a href="<?= url('/switches') ?>">Switches</a>
         <a href="<?= url('/blog') ?>">Blog</a>
-        <a href="<?= url('/login') ?>">Login</a>
+        <?php if (Auth::check()): ?>
+            <span class="nav-user">Hi, <?= e(Auth::username()) ?></span>
+            <form class="nav-logout" method="post" action="<?= url('/logout') ?>">
+                <button type="submit">Logout</button>
+            </form>
+        <?php else: ?>
+            <a href="<?= url('/login') ?>">Login</a>
+            <a href="<?= url('/register') ?>">Register</a>
+        <?php endif; ?>
     </nav>
 </header>
 <main>
