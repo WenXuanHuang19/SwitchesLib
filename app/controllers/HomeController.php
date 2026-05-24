@@ -4,14 +4,12 @@ class HomeController
 {
     public function index(): void
     {
-        // Prove the DB singleton connects. The real home page is built in Slice 7.
-        try {
-            Database::pdo();
-            $dbStatus = 'connected';
-        } catch (PDOException $e) {
-            $dbStatus = 'not connected: ' . $e->getMessage();
-        }
+        $switchRepo = new SwitchRepository(Database::pdo());
+        $blogRepo   = new BlogRepository(Database::pdo());
 
-        view('home', ['dbStatus' => $dbStatus]);
+        view('home', [
+            'latestSwitches' => $switchRepo->latest(9),
+            'latestPosts'    => array_slice($blogRepo->allPublished(), 0, 3),
+        ]);
     }
 }
