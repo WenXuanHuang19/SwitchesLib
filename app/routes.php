@@ -26,3 +26,10 @@ $router->post('/admin/switches', 'AdminSwitchController@store');
 $router->get('/admin/switches/{id}/edit', 'AdminSwitchController@edit');
 $router->post('/admin/switches/{id}/delete', 'AdminSwitchController@destroy');
 $router->post('/admin/switches/{id}', 'AdminSwitchController@update');
+
+$router->get('/admin/designers', 'AdminDesignerController@index');
+$router->get('/admin/designers/add', 'AdminDesignerController@create');
+$router->post('/admin/designers', 'AdminDesignerController@store');
+$router->get('/admin/designers/{id}/edit', 'AdminDesignerController@edit');
+$router->post('/admin/designers/{id}', 'AdminDesignerController@update');
+$router->post('/admin/designers/{id}/delete', 'AdminDesignerController@destroy');
