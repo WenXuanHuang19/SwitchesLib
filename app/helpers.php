@@ -28,3 +28,21 @@ function url(string $path = ''): string
 {
     return BASE_PATH . '/' . ltrim($path, '/');
 }
+
+/**
+ * The tags shown on a switch card, in priority order:
+ * Switch Type, then Sound Profile, then Recommended Use.
+ */
+function switch_card_tags(array $switch): array
+{
+    $candidates = [
+        $switch['switch_type'],
+        $switch['sound_profile'],
+        $switch['recommended_use'],
+    ];
+
+    return array_values(array_filter(
+        $candidates,
+        fn($tag) => $tag !== 'Unknown'
+    ));
+}

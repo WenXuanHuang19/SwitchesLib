@@ -8,7 +8,7 @@ define('VIEWS_PATH', APP_PATH . '/views');
 
 // Autoload core classes and controllers by class name.
 spl_autoload_register(function (string $class): void {
-    foreach (['core', 'controllers'] as $dir) {
+    foreach (['core', 'controllers', 'repositories'] as $dir) {
         $file = APP_PATH . '/' . $dir . '/' . $class . '.php';
         if (is_file($file)) {
             require $file;

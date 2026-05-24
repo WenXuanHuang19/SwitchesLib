@@ -29,3 +29,6 @@ docs/
 # IDE and tooling
 .codegraph/
 .cursor/
+
+# macOS
+.DS_Store
