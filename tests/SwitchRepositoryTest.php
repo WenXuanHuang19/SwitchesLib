@@ -80,6 +80,32 @@ test('byDesigner returns other switches from the same designer, excluding the cu
     assertSame(['Sibling 1', 'Sibling 2'], $names);
 });
 
+test('existsByNameAndDesigner is true when a switch with that name and designer exists', function () {
+    $pdo = test_pdo();
+    reset_db($pdo);
+
+    $designerId = insert_designer($pdo, ['name' => 'Gateron']);
+    insert_switch($pdo, ['slug' => 'oil-king', 'name' => 'Oil King', 'designer_id' => $designerId]);
+
+    $repo = new SwitchRepository($pdo);
+
+    assertTrue($repo->existsByNameAndDesigner('Oil King', $designerId));
+});
+
+test('existsByNameAndDesigner is false for a different name or different designer', function () {
+    $pdo = test_pdo();
+    reset_db($pdo);
+
+    $a = insert_designer($pdo, ['name' => 'Designer A']);
+    $b = insert_designer($pdo, ['name' => 'Designer B']);
+    insert_switch($pdo, ['slug' => 'oil-king', 'name' => 'Oil King', 'designer_id' => $a]);
+
+    $repo = new SwitchRepository($pdo);
+
+    assertSame(false, $repo->existsByNameAndDesigner('Oil King', $b));
+    assertSame(false, $repo->existsByNameAndDesigner('Other Switch', $a));
+});
+
 test('byDesigner returns at most six switches', function () {
     $pdo = test_pdo();
     reset_db($pdo);
