@@ -36,3 +36,6 @@ $navItems = [
         </nav>
     </aside>
     <main class="admin-main">
+        <?php if ($flash = flash_pull()): ?>
+            <p class="flash"><?= e($flash) ?></p>
+        <?php endif; ?>

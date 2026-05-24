@@ -8,6 +8,18 @@ class SwitchRepository
 {
     public function __construct(private PDO $pdo) {}
 
+    /** Every switch (any status) with its designer name, newest-updated first. */
+    public function all(): array
+    {
+        $stmt = $this->pdo->query(
+            "SELECT s.*, d.name AS designer_name
+             FROM switches s
+             LEFT JOIN designers d ON d.id = s.designer_id
+             ORDER BY s.updated_at DESC, s.id DESC"
+        );
+        return $stmt->fetchAll();
+    }
+
     /** All approved switches for public listing. */
     public function allApproved(): array
     {
@@ -15,6 +27,82 @@ class SwitchRepository
             "SELECT * FROM switches WHERE status = 'approved' ORDER BY created_at DESC"
         );
         return $stmt->fetchAll();
+    }
+
+    /** A single switch by id (with its designer's name), or null. */
+    public function findById(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT s.*, d.name AS designer_name
+             FROM switches s
+             LEFT JOIN designers d ON d.id = s.designer_id
+             WHERE s.id = :id"
+        );
+        $stmt->execute(['id' => $id]);
+        $switch = $stmt->fetch();
+
+        return $switch === false ? null : $switch;
+    }
+
+    /**
+     * Insert a switch from normalized column data. A unique slug is generated
+     * from the name (ADR-0002); any 'slug'/'id' in $data is ignored. Returns
+     * the new row id.
+     */
+    public function create(array $data): int
+    {
+        unset($data['id'], $data['slug']);
+        $data['slug'] = $this->uniqueSlug($data['name']);
+
+        $columns      = implode(', ', array_keys($data));
+        $placeholders = implode(', ', array_map(fn($c) => ":$c", array_keys($data)));
+
+        $stmt = $this->pdo->prepare("INSERT INTO switches ({$columns}) VALUES ({$placeholders})");
+        $stmt->execute($data);
+
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    /** Update the given columns of a switch. 'id'/'slug' in $data are ignored. */
+    public function update(int $id, array $data): void
+    {
+        unset($data['id'], $data['slug']);
+        if ($data === []) {
+            return;
+        }
+
+        $assignments = implode(', ', array_map(fn($c) => "$c = :$c", array_keys($data)));
+        $data['id']  = $id;
+
+        $stmt = $this->pdo->prepare("UPDATE switches SET {$assignments} WHERE id = :id");
+        $stmt->execute($data);
+    }
+
+    /** Hard-delete a switch (ADR: hard delete, no soft delete). */
+    public function delete(int $id): void
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM switches WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+    }
+
+    /** A slug derived from $name, suffixed (-2, -3, …) until it is unique. */
+    private function uniqueSlug(string $name): string
+    {
+        $base = Slug::make($name);
+        $slug = $base;
+        $n    = 1;
+        while ($this->slugExists($slug)) {
+            $n++;
+            $slug = $base . '-' . $n;
+        }
+        return $slug;
+    }
+
+    private function slugExists(string $slug): bool
+    {
+        $stmt = $this->pdo->prepare('SELECT 1 FROM switches WHERE slug = :slug LIMIT 1');
+        $stmt->execute(['slug' => $slug]);
+        return $stmt->fetchColumn() !== false;
     }
 
     /** A single switch by slug (with its designer's name), or null. */
