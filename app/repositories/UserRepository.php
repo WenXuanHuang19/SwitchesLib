@@ -40,6 +40,12 @@ class UserRepository
         return (int) $this->pdo->lastInsertId();
     }
 
+    /** Total number of users, for the admin dashboard. */
+    public function count(): int
+    {
+        return (int) $this->pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+    }
+
     private function one(string $sql, array $params): ?array
     {
         $stmt = $this->pdo->prepare($sql);

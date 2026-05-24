@@ -41,6 +41,22 @@ class SwitchRepository
         $stmt->execute(['id' => $id]);
     }
 
+    /** Total number of switches (all statuses), for the admin dashboard. */
+    public function count(): int
+    {
+        return (int) $this->pdo->query('SELECT COUNT(*) FROM switches')->fetchColumn();
+    }
+
+    /** The $limit most recently added switches of any status, for the admin dashboard. */
+    public function recent(int $limit = 5): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM switches ORDER BY created_at DESC, id DESC LIMIT ' . (int) $limit
+        );
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
     /** Whether a switch with the given name already exists under that designer. */
     public function existsByNameAndDesigner(string $name, ?int $designerId): bool
     {

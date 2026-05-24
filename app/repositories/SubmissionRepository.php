@@ -30,6 +30,14 @@ class SubmissionRepository
         return (int) $this->pdo->lastInsertId();
     }
 
+    /** Number of submissions still awaiting review, for the admin dashboard. */
+    public function countPending(): int
+    {
+        return (int) $this->pdo
+            ->query("SELECT COUNT(*) FROM submissions WHERE status = 'Pending'")
+            ->fetchColumn();
+    }
+
     /** All submissions for a user, newest first, with the designer's name. */
     public function forUser(int $userId): array
     {

@@ -107,6 +107,29 @@ function insert_designer(PDO $pdo, array $overrides = []): int
 }
 
 /**
+ * Insert a submission row with sensible defaults; pass overrides to set
+ * specific columns (e.g. status). Returns the new row id.
+ */
+function insert_submission(PDO $pdo, array $overrides = []): int
+{
+    $row = array_merge([
+        'user_id'     => insert_user($pdo),
+        'name'        => 'Test Submission',
+        'designer_id' => insert_designer($pdo),
+        'switch_type' => 'Linear',
+        'status'      => 'Pending',
+    ], $overrides);
+
+    $columns = implode(', ', array_keys($row));
+    $placeholders = implode(', ', array_map(fn($c) => ":$c", array_keys($row)));
+
+    $stmt = $pdo->prepare("INSERT INTO submissions ({$columns}) VALUES ({$placeholders})");
+    $stmt->execute($row);
+
+    return (int) $pdo->lastInsertId();
+}
+
+/**
  * Insert a blog post with sensible defaults; pass overrides to set specific
  * columns. Returns the new row id.
  */

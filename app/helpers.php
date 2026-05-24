@@ -1,17 +1,18 @@
 <?php
 
 /**
- * Render a view file from app/views, wrapped in the shared header/footer.
+ * Render a view file from app/views, wrapped in a layout's header/footer.
  * Variables passed in $data become local variables inside the view.
+ * $layout selects the chrome: 'partials' (public) or 'admin/partials' (admin).
  */
-function view(string $name, array $data = []): void
+function view(string $name, array $data = [], string $layout = 'partials'): void
 {
     extract($data);
     $viewFile = VIEWS_PATH . '/' . $name . '.php';
 
-    require VIEWS_PATH . '/partials/header.php';
+    require VIEWS_PATH . '/' . $layout . '/header.php';
     require $viewFile;
-    require VIEWS_PATH . '/partials/footer.php';
+    require VIEWS_PATH . '/' . $layout . '/footer.php';
 }
 
 /** Escape a string for safe output in HTML. */

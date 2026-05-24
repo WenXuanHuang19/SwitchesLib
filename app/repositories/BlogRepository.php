@@ -17,6 +17,12 @@ class BlogRepository
         return $stmt->fetchAll();
     }
 
+    /** Total number of posts (all statuses), for the admin dashboard. */
+    public function count(): int
+    {
+        return (int) $this->pdo->query('SELECT COUNT(*) FROM blog_posts')->fetchColumn();
+    }
+
     /** A single post by slug, or null if none matches. */
     public function findBySlug(string $slug): ?array
     {
