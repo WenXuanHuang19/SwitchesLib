@@ -19,6 +19,9 @@ spl_autoload_register(function (string $class): void {
 
 require APP_PATH . '/helpers.php';
 
+// Every request runs within a session so we know who is logged in.
+session_start();
+
 // Detect the base path so routing and links work whether the app is served
 // from the domain root (php -S) or a subdirectory (XAMPP /SwitchesLib/public).
 define('BASE_PATH', rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/'));
