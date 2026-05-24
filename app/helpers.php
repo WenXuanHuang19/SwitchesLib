@@ -20,6 +20,14 @@ function e(?string $value): string
     return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
 }
 
+/** Render the 404 page and stop. Used when a controller can't find a record. */
+function not_found(): void
+{
+    http_response_code(404);
+    view('errors/404');
+    exit;
+}
+
 /**
  * Build a URL relative to the app's base path, so links work whether the app
  * is served from the domain root or a subdirectory (e.g. /SwitchesLib/public).
