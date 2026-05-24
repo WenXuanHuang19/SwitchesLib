@@ -40,6 +40,22 @@ class UserRepository
         return (int) $this->pdo->lastInsertId();
     }
 
+    /** All users, newest first, for the admin user list. */
+    public function all(): array
+    {
+        $stmt = $this->pdo->query(
+            'SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC, id DESC'
+        );
+        return $stmt->fetchAll();
+    }
+
+    /** Change a user's role. No validation — the caller must guard. */
+    public function updateRole(int $id, string $role): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE users SET role = :role WHERE id = :id');
+        $stmt->execute(['role' => $role, 'id' => $id]);
+    }
+
     /** Total number of users, for the admin dashboard. */
     public function count(): int
     {
