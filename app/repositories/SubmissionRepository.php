@@ -30,6 +30,90 @@ class SubmissionRepository
         return (int) $this->pdo->lastInsertId();
     }
 
+    /** All submissions with designer + submitter name, newest first. */
+    public function all(): array
+    {
+        return $this->baseQuery('');
+    }
+
+    /** Submissions filtered by a single status. */
+    public function filtered(string $status): array
+    {
+        return $this->baseQuery('WHERE s.status = :status', ['status' => $status]);
+    }
+
+    private function baseQuery(string $where, array $params = []): array
+    {
+        $sql = "SELECT s.*, d.name AS designer_name, u.username AS submitter_username
+                FROM submissions s
+                LEFT JOIN designers d ON d.id = s.designer_id
+                LEFT JOIN users u ON u.id = s.user_id
+                {$where}
+                ORDER BY s.created_at DESC, s.id DESC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /** A single submission by id, with designer and submitter name. */
+    public function findById(int $id): ?array
+    {
+        $rows = $this->baseQuery('WHERE s.id = :id', ['id' => $id]);
+        return $rows === [] ? null : $rows[0];
+    }
+
+    /** Update editable fields on a pending submission before approving. */
+    public function update(int $id, array $data): void
+    {
+        unset($data['id'], $data['user_id'], $data['status'],
+              $data['reviewed_by'], $data['reviewed_at']);
+        if ($data === []) return;
+
+        $assignments = implode(', ', array_map(fn($c) => "$c = :$c", array_keys($data)));
+        $data['id']  = $id;
+        $stmt = $this->pdo->prepare("UPDATE submissions SET {$assignments} WHERE id = :id");
+        $stmt->execute($data);
+    }
+
+    /**
+     * Approve a submission: copy switch fields into switches, mark submission
+     * as Approved. Returns the new switch row id.
+     */
+    public function approve(int $submissionId, int $adminId): int
+    {
+        $sub = $this->findById($submissionId);
+        if ($sub === null) throw new RuntimeException("Submission not found.");
+
+        $exclude = ['id', 'user_id', 'designer_name', 'submitter_username',
+                    'status', 'reviewed_by', 'reviewed_at', 'created_at', 'updated_at'];
+
+        $data = [];
+        foreach ($sub as $col => $val) {
+            if (!in_array($col, $exclude, true)) {
+                $data[$col] = $val;
+            }
+        }
+        $data['submitted_by'] = (int) $sub['user_id'];
+        $data['approved_by']  = $adminId;
+        $data['status']       = 'approved';
+
+        $switchId = (new SwitchRepository($this->pdo))->create($data);
+
+        $this->pdo->prepare(
+            "UPDATE submissions SET status='Approved', reviewed_by=:rb, reviewed_at=NOW() WHERE id=:id"
+        )->execute(['rb' => $adminId, 'id' => $submissionId]);
+
+        return $switchId;
+    }
+
+    /** Reject a submission without creating a switch record. */
+    public function reject(int $submissionId, int $adminId): void
+    {
+        $this->pdo->prepare(
+            "UPDATE submissions SET status='Rejected', reviewed_by=:rb, reviewed_at=NOW() WHERE id=:id"
+        )->execute(['rb' => $adminId, 'id' => $submissionId]);
+    }
+
     /** Number of submissions still awaiting review, for the admin dashboard. */
     public function countPending(): int
     {

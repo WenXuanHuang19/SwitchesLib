@@ -41,6 +41,12 @@ $router->get('/admin/blog/{id}/edit', 'AdminBlogController@edit');
 $router->post('/admin/blog/{id}', 'AdminBlogController@update');
 $router->post('/admin/blog/{id}/delete', 'AdminBlogController@destroy');
 
+$router->get('/admin/submissions', 'AdminSubmissionController@index');
+$router->get('/admin/submissions/{id}', 'AdminSubmissionController@show');
+$router->post('/admin/submissions/{id}/update', 'AdminSubmissionController@update');
+$router->post('/admin/submissions/{id}/approve', 'AdminSubmissionController@approve');
+$router->post('/admin/submissions/{id}/reject', 'AdminSubmissionController@reject');
+
 $router->get('/admin/tags', 'AdminTagController@index');
 
 $router->get('/admin/users', 'AdminUserController@index');
