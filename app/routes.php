@@ -33,3 +33,10 @@ $router->post('/admin/designers', 'AdminDesignerController@store');
 $router->get('/admin/designers/{id}/edit', 'AdminDesignerController@edit');
 $router->post('/admin/designers/{id}', 'AdminDesignerController@update');
 $router->post('/admin/designers/{id}/delete', 'AdminDesignerController@destroy');
+
+$router->get('/admin/blog', 'AdminBlogController@index');
+$router->get('/admin/blog/add', 'AdminBlogController@create');
+$router->post('/admin/blog', 'AdminBlogController@store');
+$router->get('/admin/blog/{id}/edit', 'AdminBlogController@edit');
+$router->post('/admin/blog/{id}', 'AdminBlogController@update');
+$router->post('/admin/blog/{id}/delete', 'AdminBlogController@destroy');
