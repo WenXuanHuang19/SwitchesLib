@@ -41,6 +41,19 @@ class SwitchRepository
         $stmt->execute(['id' => $id]);
     }
 
+    /** The $limit most recently added approved switches, for the home page. */
+    public function latest(int $limit = 9): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM switches
+             WHERE status = 'approved'
+             ORDER BY created_at DESC
+             LIMIT " . (int) $limit
+        );
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
     /** All designers ordered alphabetically, for filter dropdowns. */
     public function allDesigners(): array
     {
