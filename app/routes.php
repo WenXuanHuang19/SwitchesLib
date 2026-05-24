@@ -41,5 +41,7 @@ $router->get('/admin/blog/{id}/edit', 'AdminBlogController@edit');
 $router->post('/admin/blog/{id}', 'AdminBlogController@update');
 $router->post('/admin/blog/{id}/delete', 'AdminBlogController@destroy');
 
+$router->get('/admin/tags', 'AdminTagController@index');
+
 $router->get('/admin/users', 'AdminUserController@index');
 $router->post('/admin/users/{id}/role', 'AdminUserController@updateRole');
