@@ -1,6 +1,14 @@
+<?php
+/**
+ * @var array  $switches   List of switch cards.
+ * @var array  $designers  All designers for the filter select.
+ * @var array  $filters    Active filter values.
+ * @var string $sort       Active sort key.
+ */
+?>
 <h1>Switches</h1>
 
-<!-- Filter form: GET so URL reflects current state -->
+<!-- Filter bar -->
 <form class="filter-bar" method="get" action="<?= url('/switches') ?>">
 
     <div class="filter-bar__row">
@@ -86,7 +94,10 @@
 </form>
 
 <?php if (empty($switches)): ?>
-    <p class="empty-state">No switches match your filters. <a href="<?= url('/switches') ?>">Clear filters</a> to see all.</p>
+    <p class="empty-state">
+        No switches match your filters.<br>
+        <a href="<?= url('/switches') ?>">Clear filters to see all →</a>
+    </p>
 <?php else: ?>
     <ul class="switch-grid">
         <?php foreach ($switches as $card): ?>
