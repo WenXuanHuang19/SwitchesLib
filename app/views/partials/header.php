@@ -24,7 +24,11 @@
         <!-- Desktop right side -->
         <div class="site-nav__right">
             <?php if (Auth::check()): ?>
-                <a href="<?= url('/submit') ?>" class="btn">Submit a Switch</a>
+                <?php if (Auth::isAdmin()): ?>
+                    <a href="<?= url('/admin') ?>" class="btn btn--admin">Admin</a>
+                <?php else: ?>
+                    <a href="<?= url('/submit') ?>" class="btn">Submit a Switch</a>
+                <?php endif; ?>
                 <a href="<?= url('/my-submissions') ?>">My Submissions</a>
                 <span class="site-nav__user">Hi, <?= e(Auth::username()) ?></span>
                 <form class="site-nav__logout" method="post" action="<?= url('/logout') ?>">
@@ -54,7 +58,11 @@
         <a href="<?= url('/switches') ?>">Switches</a>
         <a href="<?= url('/blog') ?>">Blog</a>
         <?php if (Auth::check()): ?>
-            <a href="<?= url('/submit') ?>">Submit a Switch</a>
+            <?php if (Auth::isAdmin()): ?>
+                <a href="<?= url('/admin') ?>">Admin Dashboard</a>
+            <?php else: ?>
+                <a href="<?= url('/submit') ?>">Submit a Switch</a>
+            <?php endif; ?>
             <a href="<?= url('/my-submissions') ?>">My Submissions</a>
             <span class="site-nav__user">Hi, <?= e(Auth::username()) ?></span>
             <form class="site-nav__logout" method="post" action="<?= url('/logout') ?>">

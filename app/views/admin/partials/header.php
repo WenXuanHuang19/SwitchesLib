@@ -4,7 +4,7 @@ $active = $active ?? '';
 $navItems = [
     'dashboard'   => ['Dashboard',   '/admin'],
     'switches'    => ['Switches',    '/admin/switches'],
-    'add-switch'  => ['Add Switch',  '/admin/switches/create'],
+    'add-switch'  => ['Add Switch',  '/admin/switches/add'],
     'submissions' => ['Submissions', '/admin/submissions'],
     'designers'   => ['Designers',   '/admin/designers'],
     'tags'        => ['Tags',        '/admin/tags'],
@@ -35,6 +35,9 @@ $navItems = [
                     <?= e($label) ?>
                 </a>
             <?php endforeach; ?>
+            <a href="<?= url('/') ?>" class="admin-nav__link admin-nav__link--site">
+                ← View Site
+            </a>
             <form class="admin-nav__logout" method="post" action="<?= url('/logout') ?>">
                 <button type="submit">Logout</button>
             </form>
