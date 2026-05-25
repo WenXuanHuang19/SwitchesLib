@@ -1,18 +1,65 @@
+<?php
+/**
+ * @var array  $switch       The switch record (injected by SwitchController).
+ * @var array  $similar      Similar switch cards (may be empty).
+ * @var array  $fromDesigner More switches from the same designer (may be empty).
+ */
+
+/** Map switch_type → tag modifier class */
+$typeClass = match ($switch['switch_type'] ?? '') {
+    'Linear'         => 'tag--linear',
+    'Tactile'        => 'tag--tactile',
+    'Clicky'         => 'tag--clicky',
+    'Silent Linear'  => 'tag--silent-linear',
+    'Silent Tactile' => 'tag--silent-tactile',
+    default          => 'tag--unknown',
+};
+?>
 <article class="switch-detail">
 
-    <!-- 1. Hero -->
+    <!-- 1. Hero: image + name + key tags -->
     <header class="switch-detail__hero">
-        <?php if (!empty($switch['image_url'])): ?>
-            <img class="switch-detail__image" src="<?= url($switch['image_url']) ?>" alt="<?= e($switch['name']) ?>">
-        <?php else: ?>
-            <span class="switch-detail__placeholder">No image</span>
-        <?php endif; ?>
-        <h1 class="switch-detail__name"><?= e($switch['name']) ?></h1>
+
+        <div>
+            <?php if (!empty($switch['image_url'])): ?>
+                <img class="switch-detail__image"
+                     src="<?= url($switch['image_url']) ?>"
+                     alt="<?= e($switch['name']) ?>">
+            <?php else: ?>
+                <span class="switch-detail__placeholder">No image available</span>
+            <?php endif; ?>
+        </div>
+
+        <div class="switch-detail__info-hero">
+            <h1 class="switch-detail__name"><?= e($switch['name']) ?></h1>
+
+            <?php if (!empty($switch['designer_name'])): ?>
+                <p class="switch-detail__designer-line">
+                    by <?= e($switch['designer_name']) ?>
+                </p>
+            <?php endif; ?>
+
+            <div class="switch-detail__tags">
+                <?php if (!empty($switch['switch_type'])): ?>
+                    <span class="tag <?= $typeClass ?>"><?= e($switch['switch_type']) ?></span>
+                <?php endif; ?>
+                <?php if (!empty($switch['sound_profile']) && $switch['sound_profile'] !== 'Unknown'): ?>
+                    <span class="tag"><?= e($switch['sound_profile']) ?></span>
+                <?php endif; ?>
+                <?php if (!empty($switch['feel_profile']) && $switch['feel_profile'] !== 'Unknown'): ?>
+                    <span class="tag"><?= e($switch['feel_profile']) ?></span>
+                <?php endif; ?>
+                <?php if (!empty($switch['recommended_use']) && $switch['recommended_use'] !== 'Unknown'): ?>
+                    <span class="tag"><?= e($switch['recommended_use']) ?></span>
+                <?php endif; ?>
+            </div>
+        </div>
+
     </header>
 
     <!-- 2. Basic information -->
     <section class="switch-detail__section">
-        <h2>Basic information</h2>
+        <h2>Basic Information</h2>
         <dl>
             <dt>Designer or Studio</dt><dd><?= e(or_unknown($switch['designer_name'])) ?></dd>
             <dt>Series</dt>           <dd><?= e(or_unknown($switch['series'])) ?></dd>
@@ -20,52 +67,41 @@
             <dt>Manufacturer</dt>     <dd><?= e(or_unknown($switch['manufacturer'])) ?></dd>
             <dt>Switch Category</dt>  <dd><?= e(or_unknown($switch['switch_category'])) ?></dd>
             <dt>Switch Type</dt>      <dd><?= e(or_unknown($switch['switch_type'])) ?></dd>
-            <dt>Release date</dt>     <dd><?= e(or_unknown($switch['release_date'])) ?></dd>
+            <dt>Release Date</dt>     <dd><?= e(or_unknown($switch['release_date'])) ?></dd>
         </dl>
     </section>
 
     <!-- 3. Force and travel -->
     <section class="switch-detail__section">
-        <h2>Force and travel</h2>
+        <h2>Force &amp; Travel</h2>
         <dl>
-            <dt>Initial force</dt>    <dd><?= e(or_unknown($switch['initial_force'])) ?></dd>
-            <dt>Actuation force</dt>  <dd><?= e(or_unknown($switch['actuation_force'])) ?></dd>
-            <dt>Bottom-out force</dt> <dd><?= e(or_unknown($switch['bottom_out_force'])) ?></dd>
-            <dt>Tactile force</dt>    <dd><?= e(or_unknown($switch['tactile_force'])) ?></dd>
-            <dt>Actuation travel</dt> <dd><?= e(or_unknown($switch['actuation_travel'])) ?></dd>
-            <dt>Total travel</dt>     <dd><?= e(or_unknown($switch['total_travel'])) ?></dd>
-            <dt>Spring length</dt>    <dd><?= e(or_unknown($switch['spring_length'])) ?></dd>
-            <dt>Spring type</dt>      <dd><?= e(or_unknown($switch['spring_type'])) ?></dd>
+            <dt>Initial Force</dt>    <dd><?= e(or_unknown($switch['initial_force'])) ?></dd>
+            <dt>Actuation Force</dt>  <dd><?= e(or_unknown($switch['actuation_force'])) ?></dd>
+            <dt>Bottom-out Force</dt> <dd><?= e(or_unknown($switch['bottom_out_force'])) ?></dd>
+            <dt>Tactile Force</dt>    <dd><?= e(or_unknown($switch['tactile_force'])) ?></dd>
+            <dt>Actuation Travel</dt> <dd><?= e(or_unknown($switch['actuation_travel'])) ?></dd>
+            <dt>Total Travel</dt>     <dd><?= e(or_unknown($switch['total_travel'])) ?></dd>
+            <dt>Spring Length</dt>    <dd><?= e(or_unknown($switch['spring_length'])) ?></dd>
+            <dt>Spring Type</dt>      <dd><?= e(or_unknown($switch['spring_type'])) ?></dd>
         </dl>
     </section>
 
     <!-- 4. Materials and structure -->
     <section class="switch-detail__section">
-        <h2>Materials and structure</h2>
+        <h2>Materials &amp; Structure</h2>
         <dl>
-            <dt>Top housing</dt>      <dd><?= e(or_unknown($switch['top_housing_material'])) ?></dd>
-            <dt>Bottom housing</dt>   <dd><?= e(or_unknown($switch['bottom_housing_material'])) ?></dd>
-            <dt>Stem material</dt>    <dd><?= e(or_unknown($switch['stem_material'])) ?></dd>
-            <dt>Stem type</dt>        <dd><?= e(or_unknown($switch['stem_type'])) ?></dd>
-            <dt>Contact material</dt> <dd><?= e(or_unknown($switch['contact_material'])) ?></dd>
-            <dt>Pin count</dt>        <dd><?= e(or_unknown($switch['pin_count'])) ?></dd>
-            <dt>LED diffuser</dt>     <dd><?= e(or_unknown($switch['led_diffuser'])) ?></dd>
-            <dt>RGB support</dt>      <dd><?= e(or_unknown($switch['rgb_support'])) ?></dd>
-            <dt>Factory lubed</dt>    <dd><?= e(or_unknown($switch['factory_lubed'])) ?></dd>
+            <dt>Top Housing</dt>      <dd><?= e(or_unknown($switch['top_housing_material'])) ?></dd>
+            <dt>Bottom Housing</dt>   <dd><?= e(or_unknown($switch['bottom_housing_material'])) ?></dd>
+            <dt>Stem Material</dt>    <dd><?= e(or_unknown($switch['stem_material'])) ?></dd>
+            <dt>Stem Type</dt>        <dd><?= e(or_unknown($switch['stem_type'])) ?></dd>
+            <dt>Contact Material</dt> <dd><?= e(or_unknown($switch['contact_material'])) ?></dd>
+            <dt>Pin Count</dt>        <dd><?= e(or_unknown($switch['pin_count'])) ?></dd>
+            <dt>LED Diffuser</dt>     <dd><?= e(or_unknown($switch['led_diffuser'])) ?></dd>
+            <dt>RGB Support</dt>      <dd><?= e(or_unknown($switch['rgb_support'])) ?></dd>
+            <dt>Factory Lubed</dt>    <dd><?= e(or_unknown($switch['factory_lubed'])) ?></dd>
             <dt>Silent</dt>           <dd><?= e(or_unknown($switch['is_silent'])) ?></dd>
-            <dt>Silent structure</dt> <dd><?= e(or_unknown($switch['silent_structure'])) ?></dd>
+            <dt>Silent Structure</dt> <dd><?= e(or_unknown($switch['silent_structure'])) ?></dd>
         </dl>
-    </section>
-
-    <!-- 5. Tags and recommended use -->
-    <section class="switch-detail__section">
-        <h2>Tags</h2>
-        <p class="switch-detail__tags">
-            <span class="tag"><?= e(or_unknown($switch['switch_type'])) ?></span>
-            <span class="tag"><?= e(or_unknown($switch['sound_profile'])) ?></span>
-            <span class="tag"><?= e(or_unknown($switch['feel_profile'])) ?></span>
-            <span class="tag"><?= e(or_unknown($switch['recommended_use'])) ?></span>
-        </p>
     </section>
 
     <?php if (!empty($switch['description'])): ?>
@@ -75,10 +111,10 @@
         </section>
     <?php endif; ?>
 
-    <!-- 6. Similar switches (hidden when none) -->
+    <!-- 5. Similar switches -->
     <?php if (!empty($similar)): ?>
         <section class="switch-detail__section">
-            <h2>Similar switches</h2>
+            <h2>Similar Switches</h2>
             <ul class="switch-grid">
                 <?php foreach ($similar as $card): ?>
                     <?php require VIEWS_PATH . '/switches/_card.php'; ?>
@@ -87,7 +123,7 @@
         </section>
     <?php endif; ?>
 
-    <!-- 7. More from this designer or studio (hidden when none) -->
+    <!-- 6. More from this designer or studio -->
     <?php if (!empty($fromDesigner)): ?>
         <section class="switch-detail__section">
             <h2>More from <?= e(or_unknown($switch['designer_name'] ?? null)) ?></h2>
@@ -99,9 +135,10 @@
         </section>
     <?php endif; ?>
 
-    <!-- 8. Metadata -->
+    <!-- 7. Metadata -->
     <footer class="switch-detail__meta">
-        <span>Views: <?= e((string) $switch['views_count']) ?></span>
-        <span>Added: <?= e(or_unknown($switch['created_at'])) ?></span>
+        <span><?= e((string) $switch['views_count']) ?> views</span>
+        <span>Added <?= e(or_unknown($switch['created_at'])) ?></span>
     </footer>
+
 </article>
