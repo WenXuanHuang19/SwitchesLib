@@ -9,18 +9,27 @@ class SubmissionAudioRepository
 {
     public function __construct(private PDO $pdo) {}
 
-    /** Attach a recording to a pending submission. Returns the new row id. */
-    public function add(int $submissionId, string $audioUrl, ?int $uploadedBy): int
+    /**
+     * Attach a recording to a pending submission. $config holds the
+     * recording-environment fields (missing keys default to 'Unknown').
+     * Returns the new row id.
+     */
+    public function add(int $submissionId, string $audioUrl, ?int $uploadedBy, array $config = []): int
     {
-        $stmt = $this->pdo->prepare(
-            "INSERT INTO submission_audio (submission_id, audio_url, uploaded_by)
-             VALUES (:submission_id, :audio_url, :uploaded_by)"
-        );
-        $stmt->execute([
+        $columns = ['submission_id', 'audio_url', 'uploaded_by'];
+        $params  = [
             'submission_id' => $submissionId,
             'audio_url'     => $audioUrl,
             'uploaded_by'   => $uploadedBy,
-        ]);
+        ];
+        foreach (SwitchAudioRepository::CONFIG_COLUMNS as $col) {
+            $columns[]    = $col;
+            $params[$col] = $config[$col] ?? 'Unknown';
+        }
+
+        $placeholders = implode(', ', array_map(fn($c) => ":$c", $columns));
+        $sql = 'INSERT INTO submission_audio (' . implode(', ', $columns) . ") VALUES ($placeholders)";
+        $this->pdo->prepare($sql)->execute($params);
 
         return (int) $this->pdo->lastInsertId();
     }

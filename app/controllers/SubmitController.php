@@ -64,11 +64,22 @@ class SubmitController
         if (($audioFile['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
             $url = AudioUpload::store($audioFile, self::AUDIO_DIR, self::AUDIO_PREFIX);
             (new SubmissionAudioRepository(Database::pdo()))
-                ->add($submissionId, $url, (int) Auth::id());
+                ->add($submissionId, $url, (int) Auth::id(), $this->configFromPost());
         }
 
         header('Location: ' . url('/my-submissions'));
         exit;
+    }
+
+    /** Read the recording-environment fields from POST; blanks become 'Unknown'. */
+    private function configFromPost(): array
+    {
+        $config = [];
+        foreach (SwitchAudioRepository::CONFIG_COLUMNS as $col) {
+            $val          = trim($_POST[$col] ?? '');
+            $config[$col] = $val === '' ? 'Unknown' : $val;
+        }
+        return $config;
     }
 
     /** List the current user's submissions. */

@@ -103,10 +103,23 @@ $tagSelect = function (string $name, string $label, array $options) use ($old, $
     <fieldset><legend>Media and description</legend>
         <?php $text('image_url','Image URL','url'); ?>
         <?php if (!empty($attachedAudio)): ?>
+            <?php $kbLabels = [
+                'keyboard_name' => 'Keyboard name', 'keyboard_type' => 'Keyboard type',
+                'case_material' => 'Case material', 'plate_material' => 'Plate material',
+                'mounting_style' => 'Mounting style', 'pcb' => 'PCB',
+                'foam_filling' => 'Foam / filling', 'keycap_material' => 'Keycap material',
+                'keycap_profile' => 'Keycap profile', 'microphone' => 'Microphone',
+            ]; ?>
             <div class="attached-audio">
                 <span class="attached-audio__label">Attached recording<?= count($attachedAudio) > 1 ? 's' : '' ?> (published on approval):</span>
                 <?php foreach ($attachedAudio as $rec): ?>
                     <audio controls src="<?= url($rec['audio_url']) ?>"></audio>
+                    <dl class="admin-review">
+                        <?php foreach ($kbLabels as $col => $label): ?>
+                            <dt><?= e($label) ?></dt>
+                            <dd><?= e(or_unknown($rec[$col] ?? null)) ?></dd>
+                        <?php endforeach; ?>
+                    </dl>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
