@@ -25,7 +25,7 @@ class AudioSubmissionController
         Auth::requireLogin();
         $switch = $this->requireSwitch($slug);
 
-        $config = $this->configFromPost();
+        $config = SwitchAudioRepository::configFromInput($_POST);
         $file   = $_FILES['audio'] ?? [];
 
         // Audio is the entire submission here, so it is required.
@@ -47,17 +47,6 @@ class AudioSubmissionController
         flash('Recording submitted — pending review.');
         header('Location: ' . url('/my-submissions'));
         exit;
-    }
-
-    /** Read the recording-environment fields from POST; blanks become 'Unknown'. */
-    private function configFromPost(): array
-    {
-        $config = [];
-        foreach (SwitchAudioRepository::CONFIG_COLUMNS as $col) {
-            $val           = trim($_POST[$col] ?? '');
-            $config[$col]  = $val === '' ? 'Unknown' : $val;
-        }
-        return $config;
     }
 
     /** Fetch an approved switch by slug or render 404. */

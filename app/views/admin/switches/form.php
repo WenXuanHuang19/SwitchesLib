@@ -167,6 +167,14 @@ $tagSelect = function (string $name, string $label, array $options) use ($old, $
             <?php $err('audio'); ?>
         </label>
 
+        <?php // Recording setup for the attached audio — prefer just-posted values,
+              // else the current recording's saved config, else 'Unknown'.
+              $audioConfig = [];
+              foreach (SwitchAudioRepository::CONFIG_COLUMNS as $c) {
+                  $audioConfig[$c] = $old[$c] ?? ($recording[$c] ?? 'Unknown');
+              }
+              require VIEWS_PATH . '/partials/_keyboard_config_fields.php'; ?>
+
         <label>Description
             <textarea name="description" rows="4"><?= $val('description') ?></textarea>
         </label>
