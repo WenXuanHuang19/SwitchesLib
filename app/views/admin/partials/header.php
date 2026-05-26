@@ -6,6 +6,7 @@ $navItems = [
     'switches'    => ['Switches',    '/admin/switches'],
     'add-switch'  => ['Add Switch',  '/admin/switches/add'],
     'submissions' => ['Submissions', '/admin/submissions'],
+    'audio-submissions' => ['Audio Review', '/admin/audio-submissions'],
     'designers'   => ['Designers',   '/admin/designers'],
     'tags'        => ['Tags',        '/admin/tags'],
     'blog'        => ['Blog Posts',  '/admin/blog'],

@@ -155,6 +155,18 @@ $tagSelect = function (string $name, string $label, array $options) use ($old, $
             <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp">
             <?php $err('image'); ?>
         </label>
+
+        <?php if (!empty($recording['audio_url'])): ?>
+            <p class="current-audio">
+                Current recording:
+                <audio controls src="<?= url($recording['audio_url']) ?>"></audio>
+            </p>
+        <?php endif; ?>
+        <label>Typing recording (MP3, max 5 MB)
+            <input type="file" name="audio" accept=".mp3,audio/mpeg">
+            <?php $err('audio'); ?>
+        </label>
+
         <label>Description
             <textarea name="description" rows="4"><?= $val('description') ?></textarea>
         </label>

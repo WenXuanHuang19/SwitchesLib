@@ -177,14 +177,17 @@ class SwitchRepository
     }
 
     /**
-     * Approved switches matching optional filter criteria, in the requested
-     * sort order.  $filters keys: switch_type, sound_profile, feel_profile,
-     * designer_id, factory_lubed, recommended_use.
-     * $sort: 'newest' | 'most_viewed' | 'lightest' | 'heaviest'.
+     * Approved switches matching optional filter criteria and an optional
+     * search term, in the requested sort order.
+     *
+     * $filters keys: switch_type, sound_profile, feel_profile,
+     *                designer_id, factory_lubed, recommended_use.
+     * $sort:   'newest' | 'most_viewed' | 'lightest' | 'heaviest'.
+     * $search: partial match against switch name or designer name (LIKE %q%).
      */
-    public function filtered(array $filters = [], string $sort = 'newest'): array
+    public function filtered(array $filters = [], string $sort = 'newest', ?string $search = null): array
     {
-        $where  = ["status = 'approved'"];
+        $where  = ["s.status = 'approved'"];
         $params = [];
 
         $allowed = ['switch_type', 'sound_profile', 'feel_profile',
@@ -192,19 +195,28 @@ class SwitchRepository
 
         foreach ($allowed as $col) {
             if (isset($filters[$col]) && $filters[$col] !== '') {
-                $where[]        = "$col = :$col";
+                $where[]         = "s.$col = :$col";
                 $params[":$col"] = $filters[$col];
             }
         }
 
+        if ($search !== null && $search !== '') {
+            $where[]                   = '(s.name LIKE :search_name OR d.name LIKE :search_designer)';
+            $term                      = '%' . $search . '%';
+            $params[':search_name']     = $term;
+            $params[':search_designer'] = $term;
+        }
+
         $orderBy = match ($sort) {
-            'most_viewed' => 'views_count DESC',
-            'lightest'    => 'bottom_out_force IS NULL ASC, bottom_out_force ASC',
-            'heaviest'    => 'bottom_out_force IS NULL ASC, bottom_out_force DESC',
-            default       => 'created_at DESC',
+            'most_viewed' => 's.views_count DESC',
+            'lightest'    => 's.bottom_out_force IS NULL ASC, s.bottom_out_force ASC',
+            'heaviest'    => 's.bottom_out_force IS NULL ASC, s.bottom_out_force DESC',
+            default       => 's.created_at DESC',
         };
 
-        $sql  = 'SELECT * FROM switches WHERE ' . implode(' AND ', $where);
+        $sql  = 'SELECT s.*, d.name AS designer_name FROM switches s'
+              . ' LEFT JOIN designers d ON d.id = s.designer_id'
+              . ' WHERE ' . implode(' AND ', $where);
         $sql .= ' ORDER BY ' . $orderBy;
 
         $stmt = $this->pdo->prepare($sql);

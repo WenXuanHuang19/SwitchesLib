@@ -15,6 +15,9 @@ CREATE DATABASE IF NOT EXISTS switches_lib
 USE switches_lib;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS switch_audio;
+DROP TABLE IF EXISTS audio_submissions;
+DROP TABLE IF EXISTS submission_audio;
 DROP TABLE IF EXISTS submissions;
 DROP TABLE IF EXISTS switches;
 DROP TABLE IF EXISTS blog_posts;
@@ -196,4 +199,62 @@ CREATE TABLE blog_posts (
     published_at    TIMESTAMP NULL,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------------
+-- switch_audio  (community-contributed typing recordings — ADR-0006, ADR-0007)
+--   One-to-many: a Switch may have many recordings. Phase 2 displays the most
+--   recent; the table shape leaves room for multi-recording display later.
+-- ---------------------------------------------------------------------------
+CREATE TABLE switch_audio (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    switch_id    INT NOT NULL,
+    audio_url    VARCHAR(255) NOT NULL,
+    uploaded_by  INT NULL,
+    created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_switch_audio_switch   FOREIGN KEY (switch_id)   REFERENCES switches(id) ON DELETE CASCADE,
+    CONSTRAINT fk_switch_audio_uploader FOREIGN KEY (uploaded_by) REFERENCES users(id)    ON DELETE SET NULL,
+    KEY idx_switch_audio_switch (switch_id)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------------
+-- audio_submissions  (User-proposed recordings for an existing Switch — ADR-0007)
+--   A distinct submission type from `submissions`: it targets a Switch that
+--   already exists (switch_id) and is reviewed in its own admin queue. On
+--   approval the recording is copied into switch_audio.
+-- ---------------------------------------------------------------------------
+CREATE TABLE audio_submissions (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    user_id      INT NOT NULL,
+    switch_id    INT NOT NULL,
+    audio_url    VARCHAR(255) NOT NULL,
+    status       ENUM('Pending','Approved','Rejected') NOT NULL DEFAULT 'Pending',
+    reviewed_by  INT NULL,
+    reviewed_at  TIMESTAMP NULL,
+    created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_audiosub_user     FOREIGN KEY (user_id)     REFERENCES users(id)    ON DELETE CASCADE,
+    CONSTRAINT fk_audiosub_switch   FOREIGN KEY (switch_id)   REFERENCES switches(id) ON DELETE CASCADE,
+    CONSTRAINT fk_audiosub_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id)    ON DELETE SET NULL,
+    KEY idx_audiosub_status (status),
+    KEY idx_audiosub_user (user_id)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------------
+-- submission_audio  (optional recording bundled with a new-Switch submission)
+--   Mirrors switch_audio but hangs off a pending `submissions` row. On approval
+--   each recording is copied into switch_audio for the new Switch (ADR-0007).
+-- ---------------------------------------------------------------------------
+CREATE TABLE submission_audio (
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    submission_id INT NOT NULL,
+    audio_url     VARCHAR(255) NOT NULL,
+    uploaded_by   INT NULL,
+    created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_subaudio_submission FOREIGN KEY (submission_id) REFERENCES submissions(id) ON DELETE CASCADE,
+    CONSTRAINT fk_subaudio_uploader   FOREIGN KEY (uploaded_by)   REFERENCES users(id)       ON DELETE SET NULL,
+    KEY idx_subaudio_submission (submission_id)
 ) ENGINE=InnoDB;

@@ -3,9 +3,10 @@
  * Admin review page — shows all fields, allows inline editing, and provides
  * Approve / Reject actions.
  *
- * @var array  $submission row with all switch fields + designer_name + submitter_username
- * @var array  $designers  designer rows for the dropdown
- * @var array  $errors     field-level validation errors from the last save attempt
+ * @var array  $submission    row with all switch fields + designer_name + submitter_username
+ * @var array  $designers     designer rows for the dropdown
+ * @var array  $errors        field-level validation errors from the last save attempt
+ * @var array  $attachedAudio recordings bundled with this submission (may be empty)
  */
 $isPending = $submission['status'] === 'Pending';
 $old = $errors !== [] ? ($_POST + $submission) : $submission;
@@ -101,6 +102,14 @@ $tagSelect = function (string $name, string $label, array $options) use ($old, $
 
     <fieldset><legend>Media and description</legend>
         <?php $text('image_url','Image URL','url'); ?>
+        <?php if (!empty($attachedAudio)): ?>
+            <div class="attached-audio">
+                <span class="attached-audio__label">Attached recording<?= count($attachedAudio) > 1 ? 's' : '' ?> (published on approval):</span>
+                <?php foreach ($attachedAudio as $rec): ?>
+                    <audio controls src="<?= url($rec['audio_url']) ?>"></audio>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
         <label>Description <textarea name="description" rows="4"><?= $val('description') ?></textarea></label>
     </fieldset>
 

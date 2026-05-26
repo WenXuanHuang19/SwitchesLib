@@ -99,6 +99,13 @@ class SubmissionRepository
 
         $switchId = (new SwitchRepository($this->pdo))->create($data);
 
+        // Carry any bundled recordings onto the new switch, crediting the submitter.
+        $bundled     = (new SubmissionAudioRepository($this->pdo))->forSubmission($submissionId);
+        $switchAudio = new SwitchAudioRepository($this->pdo);
+        foreach ($bundled as $rec) {
+            $switchAudio->add($switchId, $rec['audio_url'], (int) $sub['user_id']);
+        }
+
         $this->pdo->prepare(
             "UPDATE submissions SET status='Approved', reviewed_by=:rb, reviewed_at=NOW() WHERE id=:id"
         )->execute(['rb' => $adminId, 'id' => $submissionId]);

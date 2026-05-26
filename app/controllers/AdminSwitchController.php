@@ -4,6 +4,8 @@ class AdminSwitchController
 {
     private const UPLOAD_DIR    = ROOT_PATH . '/public/uploads/switches';
     private const UPLOAD_PREFIX = 'uploads/switches';
+    private const AUDIO_DIR     = ROOT_PATH . '/public/uploads/audio';
+    private const AUDIO_PREFIX  = 'uploads/audio';
 
     public function index(): void
     {
@@ -32,7 +34,8 @@ class AdminSwitchController
             return;
         }
 
-        $repo->create($result['data']);
+        $switchId = $repo->create($result['data']);
+        $this->storeAudioIfPresent($switchId);
         flash('Switch created.');
         $this->redirectToList();
     }
@@ -73,6 +76,7 @@ class AdminSwitchController
         }
 
         $repo->update((int) $id, $data);
+        $this->storeAudioIfPresent((int) $id);
         flash('Switch updated.');
         $this->redirectToList();
     }
@@ -108,6 +112,11 @@ class AdminSwitchController
             return ['errors' => ['image' => $imageError]];
         }
 
+        $audioError = AudioUpload::validate($_FILES['audio'] ?? []);
+        if ($audioError !== null) {
+            return ['errors' => ['audio' => $audioError]];
+        }
+
         if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
             $data['image_url'] = ImageUpload::store($file, self::UPLOAD_DIR, self::UPLOAD_PREFIX);
         } else {
@@ -118,15 +127,36 @@ class AdminSwitchController
         return ['data' => $data];
     }
 
+    /**
+     * If an audio file was uploaded, store it and attach a switch_audio row to
+     * the switch. Audio lives in its own table (ADR-0007), not on the switches
+     * row, so it is handled after the switch id is known.
+     */
+    private function storeAudioIfPresent(int $switchId): void
+    {
+        $file = $_FILES['audio'] ?? [];
+        if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            return;
+        }
+
+        $url = AudioUpload::store($file, self::AUDIO_DIR, self::AUDIO_PREFIX);
+        (new SwitchAudioRepository(Database::pdo()))->add($switchId, $url, Auth::id());
+    }
+
     private function renderForm(array $errors, array $old, ?array $switch): void
     {
-        $repo = new SwitchRepository(Database::pdo());
+        $repo      = new SwitchRepository(Database::pdo());
+        $recording = $switch === null
+            ? null
+            : (new SwitchAudioRepository(Database::pdo()))->latestForSwitch((int) $switch['id']);
+
         view('admin/switches/form', [
             'active'    => $switch === null ? 'add-switch' : 'switches',
             'designers' => $repo->allDesigners(),
             'errors'    => $errors,
             'old'       => $old,
             'switch'    => $switch,
+            'recording' => $recording,
         ], 'admin/partials');
     }
 
