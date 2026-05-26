@@ -388,6 +388,22 @@ body > main {
   transform: translateY(1px);
 }
 
+/* Admin button — distinct ink color, not accent */
+.btn--admin {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-bg);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.btn--admin:hover {
+  background: var(--color-ink-secondary);
+  border-color: var(--color-ink-secondary);
+  color: var(--color-bg);
+}
+
 /* Ghost / secondary button */
 .btn--ghost {
   background: transparent;
