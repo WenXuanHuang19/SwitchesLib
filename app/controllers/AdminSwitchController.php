@@ -140,7 +140,8 @@ class AdminSwitchController
         }
 
         $url = AudioUpload::store($file, self::AUDIO_DIR, self::AUDIO_PREFIX);
-        (new SwitchAudioRepository(Database::pdo()))->add($switchId, $url, Auth::id());
+        (new SwitchAudioRepository(Database::pdo()))
+            ->add($switchId, $url, Auth::id(), SwitchAudioRepository::configFromInput($_POST));
     }
 
     private function renderForm(array $errors, array $old, ?array $switch): void

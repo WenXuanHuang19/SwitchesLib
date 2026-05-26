@@ -92,4 +92,36 @@ class SwitchAudioRepositoryTest extends TestCase
             $this->assertSame($val, $latest[$col], "config field '$col' should round-trip");
         }
     }
+
+    // -----------------------------------------------------------------------
+    // configFromInput(): shared extraction of recording-environment fields
+    // from a request payload, reused by every audio-upload entry point.
+    // -----------------------------------------------------------------------
+
+    public function test_config_from_input_keeps_provided_values(): void
+    {
+        $input = [
+            'keyboard_name'  => 'Keychron Q1',
+            'mounting_style' => 'Gasket',
+            'microphone'     => 'Shure SM7B',
+            'unrelated'      => 'ignored',
+        ];
+
+        $config = SwitchAudioRepository::configFromInput($input);
+
+        $this->assertSame('Keychron Q1', $config['keyboard_name']);
+        $this->assertSame('Gasket', $config['mounting_style']);
+        $this->assertSame('Shure SM7B', $config['microphone']);
+        $this->assertArrayNotHasKey('unrelated', $config);
+    }
+
+    public function test_config_from_input_defaults_blank_and_missing_to_unknown(): void
+    {
+        // 'pcb' blank, everything else omitted → all 'Unknown'.
+        $config = SwitchAudioRepository::configFromInput(['pcb' => '   ']);
+
+        foreach (SwitchAudioRepository::CONFIG_COLUMNS as $col) {
+            $this->assertSame('Unknown', $config[$col], "'$col' should default to Unknown");
+        }
+    }
 }

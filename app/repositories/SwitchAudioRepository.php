@@ -21,6 +21,22 @@ class SwitchAudioRepository
     public function __construct(private PDO $pdo) {}
 
     /**
+     * Extract the recording-environment fields from a request payload (e.g.
+     * $_POST), trimming each value and falling back to 'Unknown' when blank or
+     * absent. Shared by every audio-upload entry point so the field handling
+     * stays identical.
+     */
+    public static function configFromInput(array $input): array
+    {
+        $config = [];
+        foreach (self::CONFIG_COLUMNS as $col) {
+            $val          = trim($input[$col] ?? '');
+            $config[$col] = $val === '' ? 'Unknown' : $val;
+        }
+        return $config;
+    }
+
+    /**
      * Attach a recording to a switch. $config holds the recording-environment
      * fields (missing keys default to 'Unknown'). Returns the new row id.
      */
