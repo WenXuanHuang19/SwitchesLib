@@ -1250,6 +1250,24 @@ label:has(.field-error) textarea {
   text-decoration: underline;
 }
 
+.switch-detail__audio-config {
+  display: grid;
+  grid-template-columns: minmax(110px, max-content) 1fr;
+  gap: var(--space-1) var(--space-4);
+  margin-top: var(--space-4);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+}
+
+.switch-detail__audio-config dt {
+  color: var(--color-ink-secondary);
+}
+
+.switch-detail__audio-config dd {
+  color: var(--color-ink);
+  margin: 0;
+}
+
 .switch-detail__meta {
   display: flex;
   gap: var(--space-5);

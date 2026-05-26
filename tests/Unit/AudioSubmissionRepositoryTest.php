@@ -141,4 +141,62 @@ class AudioSubmissionRepositoryTest extends TestCase
         // No recording should have been published.
         $this->assertNull((new SwitchAudioRepository($this->pdo))->latestForSwitch($this->switchId));
     }
+
+    // -----------------------------------------------------------------------
+    // Keyboard configuration metadata (PRD v1.0 §20.1)
+    // -----------------------------------------------------------------------
+
+    /** A full set of recording-environment values, for reuse across tests. */
+    private function fullConfig(): array
+    {
+        return [
+            'keyboard_name'   => 'Keychron Q1',
+            'keyboard_type'   => '75%',
+            'case_material'   => 'Aluminum',
+            'plate_material'  => 'Brass',
+            'mounting_style'  => 'Gasket',
+            'pcb'             => 'Hotswap',
+            'foam_filling'    => 'Case foam + PE foam',
+            'keycap_material' => 'PBT',
+            'keycap_profile'  => 'Cherry',
+            'microphone'      => 'Shure SM7B',
+        ];
+    }
+
+    public function test_create_stores_keyboard_configuration(): void
+    {
+        $config = $this->fullConfig();
+        $id     = $this->repo->create($this->userId, $this->switchId, 'uploads/audio/clip.mp3', $config);
+
+        $sub = $this->repo->findById($id);
+        foreach ($config as $col => $val) {
+            $this->assertSame($val, $sub[$col], "config field '$col' should round-trip");
+        }
+    }
+
+    public function test_create_defaults_omitted_config_to_unknown(): void
+    {
+        // Submitter leaves the recording environment blank → every field is 'Unknown',
+        // matching the project's Unknown convention (not blank).
+        $id  = $this->repo->create($this->userId, $this->switchId, 'uploads/audio/clip.mp3', []);
+        $sub = $this->repo->findById($id);
+
+        foreach (SwitchAudioRepository::CONFIG_COLUMNS as $col) {
+            $this->assertSame('Unknown', $sub[$col], "omitted '$col' should default to Unknown");
+        }
+    }
+
+    public function test_approve_copies_keyboard_configuration_into_switch_audio(): void
+    {
+        $config = $this->fullConfig();
+        $id     = $this->repo->create($this->userId, $this->switchId, 'uploads/audio/clip.mp3', $config);
+
+        $this->repo->approve($id, $this->adminId);
+
+        // The published recording must carry the same recording-environment data.
+        $latest = (new SwitchAudioRepository($this->pdo))->latestForSwitch($this->switchId);
+        foreach ($config as $col => $val) {
+            $this->assertSame($val, $latest[$col], "approve should carry '$col' into switch_audio");
+        }
+    }
 }

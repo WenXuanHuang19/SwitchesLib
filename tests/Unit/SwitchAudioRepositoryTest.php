@@ -69,4 +69,27 @@ class SwitchAudioRepositoryTest extends TestCase
         $this->assertSame('uploads/audio/orphan.mp3', $latest['audio_url']);
         $this->assertNull($latest['uploader_name']);
     }
+
+    public function test_add_stores_keyboard_configuration(): void
+    {
+        $config = [
+            'keyboard_name'   => 'Mode Sonnet',
+            'keyboard_type'   => '75%',
+            'case_material'   => 'Aluminum',
+            'plate_material'  => 'POM',
+            'mounting_style'  => 'Top mount',
+            'pcb'             => 'Soldered',
+            'foam_filling'    => 'No foam',
+            'keycap_material' => 'PBT',
+            'keycap_profile'  => 'MT3',
+            'microphone'      => 'Rode NT1',
+        ];
+
+        $this->audio->add($this->switchId, 'uploads/audio/clip.mp3', $this->userId, $config);
+
+        $latest = $this->audio->latestForSwitch($this->switchId);
+        foreach ($config as $col => $val) {
+            $this->assertSame($val, $latest[$col], "config field '$col' should round-trip");
+        }
+    }
 }

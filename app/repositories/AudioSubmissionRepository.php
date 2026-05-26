@@ -11,19 +11,25 @@ class AudioSubmissionRepository
 
     /**
      * Store a new Audio Submission for the given user against an existing
-     * switch. Status is always 'Pending'; returns the new row id.
+     * switch. $config holds the recording-environment fields (missing keys
+     * default to 'Unknown'). Status is always 'Pending'; returns the new row id.
      */
-    public function create(int $userId, int $switchId, string $audioUrl): int
+    public function create(int $userId, int $switchId, string $audioUrl, array $config = []): int
     {
-        $stmt = $this->pdo->prepare(
-            "INSERT INTO audio_submissions (user_id, switch_id, audio_url, status)
-             VALUES (:user_id, :switch_id, :audio_url, 'Pending')"
-        );
-        $stmt->execute([
-            'user_id'   => $userId,
-            'switch_id' => $switchId,
-            'audio_url' => $audioUrl,
-        ]);
+        $columns = ['user_id', 'switch_id', 'audio_url'];
+        $params  = ['user_id' => $userId, 'switch_id' => $switchId, 'audio_url' => $audioUrl];
+
+        foreach (SwitchAudioRepository::CONFIG_COLUMNS as $col) {
+            $columns[]     = $col;
+            $params[$col]  = $config[$col] ?? 'Unknown';
+        }
+        $columns[] = 'status';
+        $params['status'] = 'Pending';
+
+        $placeholders = implode(', ', array_map(fn($c) => ":$c", $columns));
+        $sql = 'INSERT INTO audio_submissions (' . implode(', ', $columns) . ") VALUES ($placeholders)";
+
+        $this->pdo->prepare($sql)->execute($params);
 
         return (int) $this->pdo->lastInsertId();
     }
@@ -76,10 +82,16 @@ class AudioSubmissionRepository
             throw new RuntimeException('Audio submission not found.');
         }
 
+        $config = [];
+        foreach (SwitchAudioRepository::CONFIG_COLUMNS as $col) {
+            $config[$col] = $sub[$col];
+        }
+
         $audioId = (new SwitchAudioRepository($this->pdo))->add(
             (int) $sub['switch_id'],
             $sub['audio_url'],
-            (int) $sub['user_id']
+            (int) $sub['user_id'],
+            $config
         );
 
         $this->pdo->prepare(

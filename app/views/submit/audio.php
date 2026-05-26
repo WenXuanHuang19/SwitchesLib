@@ -28,6 +28,8 @@
             </label>
         </fieldset>
 
+        <?php require VIEWS_PATH . '/partials/_keyboard_config_fields.php'; ?>
+
         <button type="submit" class="btn">Submit recording</button>
         <a href="<?= url('/switches/' . $switch['slug']) ?>" class="btn btn--ghost">Cancel</a>
     </form>

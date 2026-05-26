@@ -68,6 +68,18 @@ $typeClass = match ($switch['switch_type'] ?? '') {
                 Recorded by <?= e($recording['uploader_name'] ?? 'a community member') ?>
                 <span class="switch-detail__audio-note">— community recording, not an official spec</span>
             </p>
+            <dl class="switch-detail__audio-config">
+                <?php foreach ([
+                    'keyboard_name' => 'Keyboard', 'keyboard_type' => 'Type',
+                    'case_material' => 'Case', 'plate_material' => 'Plate',
+                    'mounting_style' => 'Mounting', 'pcb' => 'PCB',
+                    'foam_filling' => 'Foam / filling', 'keycap_material' => 'Keycaps',
+                    'keycap_profile' => 'Profile', 'microphone' => 'Microphone',
+                ] as $col => $label): ?>
+                    <dt><?= e($label) ?></dt>
+                    <dd><?= e(or_unknown($recording[$col] ?? null)) ?></dd>
+                <?php endforeach; ?>
+            </dl>
         <?php else: ?>
             <p class="switch-detail__audio-empty">
                 No recording yet — be the first to submit one.
