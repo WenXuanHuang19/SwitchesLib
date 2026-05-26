@@ -147,6 +147,10 @@ $tagSelect = function (string $name, string $label, array $options) use ($old, $
             </label>
         </fieldset>
 
+        <?php // Recording setup — only used if a recording is attached above.
+              $audioConfig = $old;
+              require VIEWS_PATH . '/partials/_keyboard_config_fields.php'; ?>
+
         <button type="submit" class="btn">Submit for review</button>
     </form>
 </div>

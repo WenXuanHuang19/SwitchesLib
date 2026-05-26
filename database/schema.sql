@@ -277,6 +277,19 @@ CREATE TABLE submission_audio (
     id            INT AUTO_INCREMENT PRIMARY KEY,
     submission_id INT NOT NULL,
     audio_url     VARCHAR(255) NOT NULL,
+
+    -- Recording environment (PRD v1.0 §20.1) — free text, 'Unknown' when not given
+    keyboard_name    VARCHAR(255) NOT NULL DEFAULT 'Unknown',
+    keyboard_type    VARCHAR(255) NOT NULL DEFAULT 'Unknown',
+    case_material    VARCHAR(255) NOT NULL DEFAULT 'Unknown',
+    plate_material   VARCHAR(255) NOT NULL DEFAULT 'Unknown',
+    mounting_style   VARCHAR(255) NOT NULL DEFAULT 'Unknown',
+    pcb              VARCHAR(255) NOT NULL DEFAULT 'Unknown',
+    foam_filling     VARCHAR(255) NOT NULL DEFAULT 'Unknown',
+    keycap_material  VARCHAR(255) NOT NULL DEFAULT 'Unknown',
+    keycap_profile   VARCHAR(255) NOT NULL DEFAULT 'Unknown',
+    microphone       VARCHAR(255) NOT NULL DEFAULT 'Unknown',
+
     uploaded_by   INT NULL,
     created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

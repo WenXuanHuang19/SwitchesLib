@@ -111,4 +111,32 @@ class SubmissionRepositoryTest extends TestCase
 
         $this->assertNull((new SwitchAudioRepository($this->pdo))->latestForSwitch($switchId));
     }
+
+    public function test_approve_copies_bundled_audio_keyboard_configuration(): void
+    {
+        $config = [
+            'keyboard_name'   => 'Keychron Q1',
+            'keyboard_type'   => '75%',
+            'case_material'   => 'Aluminum',
+            'plate_material'  => 'Brass',
+            'mounting_style'  => 'Gasket',
+            'pcb'             => 'Hotswap',
+            'foam_filling'    => 'Case foam + PE foam',
+            'keycap_material' => 'PBT',
+            'keycap_profile'  => 'Cherry',
+            'microphone'      => 'Shure SM7B',
+        ];
+
+        $subId = $this->submissions->create($this->userId, $this->submissionData());
+        (new SubmissionAudioRepository($this->pdo))
+            ->add($subId, 'uploads/audio/bundled.mp3', $this->userId, $config);
+
+        $switchId = $this->submissions->approve($subId, $this->adminId);
+
+        // The published recording must carry the same recording-environment data.
+        $latest = (new SwitchAudioRepository($this->pdo))->latestForSwitch($switchId);
+        foreach ($config as $col => $val) {
+            $this->assertSame($val, $latest[$col], "approve should carry '$col' into switch_audio");
+        }
+    }
 }

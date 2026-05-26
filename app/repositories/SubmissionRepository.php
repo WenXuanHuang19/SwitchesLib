@@ -103,7 +103,11 @@ class SubmissionRepository
         $bundled     = (new SubmissionAudioRepository($this->pdo))->forSubmission($submissionId);
         $switchAudio = new SwitchAudioRepository($this->pdo);
         foreach ($bundled as $rec) {
-            $switchAudio->add($switchId, $rec['audio_url'], (int) $sub['user_id']);
+            $config = [];
+            foreach (SwitchAudioRepository::CONFIG_COLUMNS as $col) {
+                $config[$col] = $rec[$col] ?? 'Unknown';
+            }
+            $switchAudio->add($switchId, $rec['audio_url'], (int) $sub['user_id'], $config);
         }
 
         $this->pdo->prepare(

@@ -46,4 +46,37 @@ class SubmissionAudioRepositoryTest extends TestCase
     {
         $this->assertSame([], $this->repo->forSubmission($this->submissionId));
     }
+
+    public function test_add_stores_keyboard_configuration(): void
+    {
+        $config = [
+            'keyboard_name'   => 'Mode Sonnet',
+            'keyboard_type'   => '75%',
+            'case_material'   => 'Aluminum',
+            'plate_material'  => 'POM',
+            'mounting_style'  => 'Top mount',
+            'pcb'             => 'Soldered',
+            'foam_filling'    => 'No foam',
+            'keycap_material' => 'PBT',
+            'keycap_profile'  => 'MT3',
+            'microphone'      => 'Rode NT1',
+        ];
+
+        $this->repo->add($this->submissionId, 'uploads/audio/clip.mp3', $this->userId, $config);
+
+        $rows = $this->repo->forSubmission($this->submissionId);
+        foreach ($config as $col => $val) {
+            $this->assertSame($val, $rows[0][$col], "config field '$col' should round-trip");
+        }
+    }
+
+    public function test_add_defaults_omitted_config_to_unknown(): void
+    {
+        $this->repo->add($this->submissionId, 'uploads/audio/clip.mp3', $this->userId, []);
+
+        $rows = $this->repo->forSubmission($this->submissionId);
+        foreach (SwitchAudioRepository::CONFIG_COLUMNS as $col) {
+            $this->assertSame('Unknown', $rows[0][$col], "omitted '$col' should default to Unknown");
+        }
+    }
 }
