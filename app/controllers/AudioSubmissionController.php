@@ -16,7 +16,7 @@ class AudioSubmissionController
         Auth::requireLogin();
         $switch = $this->requireSwitch($slug);
 
-        view('submit/audio', ['switch' => $switch, 'error' => null]);
+        view('submit/audio', ['switch' => $switch, 'error' => null, 'audioConfig' => []]);
     }
 
     /** Validate the uploaded recording and store it as a Pending submission. */
@@ -25,27 +25,39 @@ class AudioSubmissionController
         Auth::requireLogin();
         $switch = $this->requireSwitch($slug);
 
-        $file = $_FILES['audio'] ?? [];
+        $config = $this->configFromPost();
+        $file   = $_FILES['audio'] ?? [];
 
         // Audio is the entire submission here, so it is required.
         if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
-            view('submit/audio', ['switch' => $switch, 'error' => 'Please choose an MP3 file to upload.']);
+            view('submit/audio', ['switch' => $switch, 'error' => 'Please choose an MP3 file to upload.', 'audioConfig' => $config]);
             return;
         }
 
         $audioError = AudioUpload::validate($file);
         if ($audioError !== null) {
-            view('submit/audio', ['switch' => $switch, 'error' => $audioError]);
+            view('submit/audio', ['switch' => $switch, 'error' => $audioError, 'audioConfig' => $config]);
             return;
         }
 
         $url = AudioUpload::store($file, self::AUDIO_DIR, self::AUDIO_PREFIX);
         (new AudioSubmissionRepository(Database::pdo()))
-            ->create((int) Auth::id(), (int) $switch['id'], $url);
+            ->create((int) Auth::id(), (int) $switch['id'], $url, $config);
 
         flash('Recording submitted — pending review.');
         header('Location: ' . url('/my-submissions'));
         exit;
+    }
+
+    /** Read the recording-environment fields from POST; blanks become 'Unknown'. */
+    private function configFromPost(): array
+    {
+        $config = [];
+        foreach (SwitchAudioRepository::CONFIG_COLUMNS as $col) {
+            $val           = trim($_POST[$col] ?? '');
+            $config[$col]  = $val === '' ? 'Unknown' : $val;
+        }
+        return $config;
     }
 
     /** Fetch an approved switch by slug or render 404. */
