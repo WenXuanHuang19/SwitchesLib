@@ -237,4 +237,88 @@ class SwitchRepositoryTest extends TestCase
         $this->assertSame($near, (int) $similar[0]['id']);
         $this->assertSame($far,  (int) $similar[1]['id']);
     }
+
+    // -----------------------------------------------------------------------
+    // filtered() — search (name + designer name)
+    // -----------------------------------------------------------------------
+
+    /** Insert a designer and return its id. */
+    private function insertDesigner(string $name): int
+    {
+        $this->pdo->prepare('INSERT INTO designers (name) VALUES (:name)')->execute(['name' => $name]);
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    public function test_search_by_switch_name_returns_matching_rows(): void
+    {
+        $this->insertSwitch(['name' => 'Gateron Yellow']);
+        $this->insertSwitch(['name' => 'Cherry MX Red']);
+
+        $results = $this->repo->filtered([], 'newest', 'Yellow');
+
+        $this->assertCount(1, $results);
+        $this->assertSame('Gateron Yellow', $results[0]['name']);
+    }
+
+    public function test_search_is_case_insensitive(): void
+    {
+        $this->insertSwitch(['name' => 'Gateron Yellow']);
+
+        $results = $this->repo->filtered([], 'newest', 'yellow');
+
+        $this->assertCount(1, $results);
+    }
+
+    public function test_search_by_designer_name_returns_matching_rows(): void
+    {
+        $designerId = $this->insertDesigner('Gateron');
+        $this->insertSwitch(['name' => 'G Pro Yellow', 'designer_id' => $designerId]);
+        $this->insertSwitch(['name' => 'Unrelated Switch']);   // no designer
+
+        $results = $this->repo->filtered([], 'newest', 'Gateron');
+
+        $names = array_column($results, 'name');
+        $this->assertContains('G Pro Yellow', $names);
+        $this->assertNotContains('Unrelated Switch', $names);
+    }
+
+    public function test_search_and_filter_compose_with_and_logic(): void
+    {
+        // Matches search but not the filter.
+        $this->insertSwitch(['name' => 'Alpha Linear', 'switch_type' => 'Linear']);
+        // Matches filter but not the search.
+        $this->insertSwitch(['name' => 'Beta Tactile',  'switch_type' => 'Tactile']);
+        // Matches both.
+        $this->insertSwitch(['name' => 'Alpha Tactile', 'switch_type' => 'Tactile']);
+
+        $results = $this->repo->filtered(['switch_type' => 'Tactile'], 'newest', 'Alpha');
+
+        $this->assertCount(1, $results);
+        $this->assertSame('Alpha Tactile', $results[0]['name']);
+    }
+
+    public function test_empty_search_returns_all_approved_switches(): void
+    {
+        $this->insertSwitch(['name' => 'Switch One']);
+        $this->insertSwitch(['name' => 'Switch Two']);
+
+        $withSearch    = $this->repo->filtered([], 'newest', null);
+        $withoutSearch = $this->repo->filtered([], 'newest');
+
+        $this->assertCount(count($withoutSearch), $withSearch);
+    }
+
+    public function test_filtered_result_includes_designer_name(): void
+    {
+        $designerId = $this->insertDesigner('Durock');
+        $this->insertSwitch(['name' => 'Dolphin', 'designer_id' => $designerId]);
+
+        $results = $this->repo->filtered();
+
+        $match = array_filter($results, fn($r) => $r['name'] === 'Dolphin');
+        $match = array_values($match);
+
+        $this->assertNotEmpty($match);
+        $this->assertSame('Durock', $match[0]['designer_name']);
+    }
 }

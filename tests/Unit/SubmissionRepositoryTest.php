@@ -88,4 +88,27 @@ class SubmissionRepositoryTest extends TestCase
         $this->assertSame((string) $this->userId,  (string) $switch['submitted_by']);
         $this->assertSame((string) $this->adminId, (string) $switch['approved_by']);
     }
+
+    public function test_approve_copies_bundled_audio_onto_the_new_switch(): void
+    {
+        $subId = $this->submissions->create($this->userId, $this->submissionData());
+        (new SubmissionAudioRepository($this->pdo))
+            ->add($subId, 'uploads/audio/bundled.mp3', $this->userId);
+
+        $switchId = $this->submissions->approve($subId, $this->adminId);
+
+        // The bundled recording is now published on the new switch, credited to the submitter.
+        $latest = (new SwitchAudioRepository($this->pdo))->latestForSwitch($switchId);
+        $this->assertNotNull($latest);
+        $this->assertSame('uploads/audio/bundled.mp3', $latest['audio_url']);
+        $this->assertSame((string) $this->userId, (string) $latest['uploaded_by']);
+    }
+
+    public function test_approve_without_bundled_audio_leaves_switch_audio_empty(): void
+    {
+        $subId    = $this->submissions->create($this->userId, $this->submissionData());
+        $switchId = $this->submissions->approve($subId, $this->adminId);
+
+        $this->assertNull((new SwitchAudioRepository($this->pdo))->latestForSwitch($switchId));
+    }
 }

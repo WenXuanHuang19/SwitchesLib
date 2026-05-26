@@ -3,6 +3,7 @@
  * @var array  $switch       The switch record (injected by SwitchController).
  * @var array  $similar      Similar switch cards (may be empty).
  * @var array  $fromDesigner More switches from the same designer (may be empty).
+ * @var ?array $recording    Most recent typing recording, or null if none.
  */
 
 /** Map switch_type → tag modifier class */
@@ -56,6 +57,30 @@ $typeClass = match ($switch['switch_type'] ?? '') {
         </div>
 
     </header>
+
+    <!-- 1b. Typing recording (community content, kept apart from official specs — ADR-0006) -->
+    <section class="switch-detail__audio">
+        <h2>Typing Sound</h2>
+        <?php if (!empty($recording['audio_url'])): ?>
+            <audio class="switch-detail__player" controls
+                   src="<?= url($recording['audio_url']) ?>"></audio>
+            <p class="switch-detail__audio-credit">
+                Recorded by <?= e($recording['uploader_name'] ?? 'a community member') ?>
+                <span class="switch-detail__audio-note">— community recording, not an official spec</span>
+            </p>
+        <?php else: ?>
+            <p class="switch-detail__audio-empty">
+                No recording yet — be the first to submit one.
+            </p>
+        <?php endif; ?>
+
+        <?php if (Auth::check()): ?>
+            <a class="switch-detail__audio-submit"
+               href="<?= url('/switches/' . $switch['slug'] . '/submit-audio') ?>">
+                Submit a recording
+            </a>
+        <?php endif; ?>
+    </section>
 
     <!-- 2. Basic information -->
     <section class="switch-detail__section">

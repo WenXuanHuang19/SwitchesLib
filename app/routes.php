@@ -4,6 +4,8 @@
 
 $router->get('/', 'HomeController@index');
 $router->get('/switches', 'SwitchController@index');
+$router->get('/switches/{slug}/submit-audio', 'AudioSubmissionController@show');
+$router->post('/switches/{slug}/submit-audio', 'AudioSubmissionController@store');
 $router->get('/switches/{slug}', 'SwitchController@show');
 $router->get('/blog', 'BlogController@index');
 $router->get('/blog/{slug}', 'BlogController@show');
@@ -46,6 +48,11 @@ $router->get('/admin/submissions/{id}', 'AdminSubmissionController@show');
 $router->post('/admin/submissions/{id}/update', 'AdminSubmissionController@update');
 $router->post('/admin/submissions/{id}/approve', 'AdminSubmissionController@approve');
 $router->post('/admin/submissions/{id}/reject', 'AdminSubmissionController@reject');
+
+$router->get('/admin/audio-submissions', 'AdminAudioSubmissionController@index');
+$router->get('/admin/audio-submissions/{id}', 'AdminAudioSubmissionController@show');
+$router->post('/admin/audio-submissions/{id}/approve', 'AdminAudioSubmissionController@approve');
+$router->post('/admin/audio-submissions/{id}/reject', 'AdminAudioSubmissionController@reject');
 
 $router->get('/admin/tags', 'AdminTagController@index');
 

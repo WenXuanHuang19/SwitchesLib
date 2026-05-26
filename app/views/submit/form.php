@@ -48,7 +48,7 @@ $tagSelect = function (string $name, string $label, array $options) use ($old, $
     <h1>Submit a Switch</h1>
     <p class="form-hint">Fill in what you know. For specs you're unsure of, leave the field blank or select <strong>Unknown</strong>.</p>
 
-    <form class="submit-form" method="post" action="<?= url('/submit') ?>">
+    <form class="submit-form" method="post" action="<?= url('/submit') ?>" enctype="multipart/form-data">
 
         <fieldset>
             <legend>Identity</legend>
@@ -138,6 +138,10 @@ $tagSelect = function (string $name, string $label, array $options) use ($old, $
         <fieldset>
             <legend>Media &amp; Description</legend>
             <?php $text('image_url', 'Image URL', 'url'); ?>
+            <label>Typing recording (optional, MP3, max 5 MB)
+                <input type="file" name="audio" accept=".mp3,audio/mpeg">
+                <?php $err('audio'); ?>
+            </label>
             <label>Description
                 <textarea name="description" rows="4"><?= $val('description') ?></textarea>
             </label>

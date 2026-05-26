@@ -4,12 +4,23 @@
  * @var array  $designers  All designers for the filter select.
  * @var array  $filters    Active filter values.
  * @var string $sort       Active sort key.
+ * @var string $search     Active search term (may be empty string).
  */
 ?>
 <h1>Switches</h1>
 
 <!-- Filter bar -->
 <form class="filter-bar" method="get" action="<?= url('/switches') ?>">
+
+    <div class="filter-bar__row filter-bar__row--search">
+        <input
+            type="text"
+            name="q"
+            class="filter-bar__search"
+            placeholder="Search by name or designer…"
+            value="<?= e($search ?? '') ?>"
+        >
+    </div>
 
     <div class="filter-bar__row">
 
@@ -86,7 +97,7 @@
 
         <button type="submit" class="btn">Apply</button>
 
-        <?php if (!empty($filters)): ?>
+        <?php if (!empty($filters) || ($search ?? '') !== ''): ?>
             <a href="<?= url('/switches') ?>" class="btn btn--ghost">Clear filters</a>
         <?php endif; ?>
     </div>

@@ -22,11 +22,14 @@ class SwitchController
             $sort = 'newest';
         }
 
+        $search = trim($_GET['q'] ?? '');
+
         view('switches/index', [
-            'switches'  => $repo->filtered($filters, $sort),
+            'switches'  => $repo->filtered($filters, $sort, $search !== '' ? $search : null),
             'designers' => $repo->allDesigners(),
             'filters'   => $filters,
             'sort'      => $sort,
+            'search'    => $search,
         ]);
     }
 
@@ -44,11 +47,13 @@ class SwitchController
         $switch['views_count'] = (int) $switch['views_count'] + 1; // reflect this visit
 
         $designerId = $switch['designer_id'] !== null ? (int) $switch['designer_id'] : null;
+        $audioRepo  = new SwitchAudioRepository(Database::pdo());
 
         view('switches/show', [
             'switch'       => $switch,
             'similar'      => $repo->similarTo($switch),
             'fromDesigner' => $repo->byDesigner($designerId, (int) $switch['id']),
+            'recording'    => $audioRepo->latestForSwitch((int) $switch['id']),
         ]);
     }
 }

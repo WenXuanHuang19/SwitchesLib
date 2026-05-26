@@ -77,12 +77,14 @@ class AdminSubmissionController
 
     private function renderShow(array $sub, array $errors): void
     {
-        $repo = new SwitchRepository(Database::pdo());
+        $repo      = new SwitchRepository(Database::pdo());
+        $audioRepo = new SubmissionAudioRepository(Database::pdo());
         view('admin/submissions/show', [
-            'active'    => 'submissions',
-            'submission' => $sub,
-            'designers' => $repo->allDesigners(),
-            'errors'    => $errors,
+            'active'         => 'submissions',
+            'submission'     => $sub,
+            'designers'      => $repo->allDesigners(),
+            'errors'         => $errors,
+            'attachedAudio'  => $audioRepo->forSubmission((int) $sub['id']),
         ], 'admin/partials');
     }
 

@@ -38,3 +38,6 @@ public/uploads/*/*
 
 # Composer / PHP dependencies
 vendor/
+
+# PHPUnit
+.phpunit.result.cache
