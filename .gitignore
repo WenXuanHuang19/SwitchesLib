@@ -35,3 +35,6 @@ docs/
 # User-uploaded media (keep the directory placeholders, not the files)
 public/uploads/*/*
 !public/uploads/*/.gitkeep
+
+# Composer / PHP dependencies
+vendor/
